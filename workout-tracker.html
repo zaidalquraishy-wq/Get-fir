@@ -1,0 +1,2380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0e0e0e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Training Log">
+<meta name="description" content="8-Week Dumbbell Training Tracker">
+<link rel="manifest" href="data:application/json,{&quot;name&quot;:&quot;8-Week Training Log&quot;,&quot;short_name&quot;:&quot;TrainLog&quot;,&quot;description&quot;:&quot;8-Week Dumbbell Training Tracker&quot;,&quot;start_url&quot;:&quot;.&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;%230e0e0e&quot;,&quot;theme_color&quot;:&quot;%230e0e0e&quot;,&quot;icons&quot;:[{&quot;src&quot;:&quot;data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏋️</text></svg>&quot;,&quot;sizes&quot;:&quot;any&quot;,&quot;type&quot;:&quot;image/svg+xml&quot;}]}">
+<title>💪 8-Week Training Log</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏋️</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=Space+Grotesk:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e0e;
+    --surface: #161616;
+    --surface2: #1e1e1e;
+    --border: #2a2a2a;
+    --accent: #e8ff47;
+    --accent2: #ff6b35;
+    --text: #f0f0f0;
+    --muted: #666;
+    --green: #4ade80;
+    --red: #f87171;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  header {
+    border-bottom: 2px solid var(--accent);
+    padding: 24px 32px 20px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 100;
+  }
+
+  header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.2rem, 6vw, 4rem);
+    letter-spacing: 0.04em;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  header h1 span {
+    color: var(--text);
+  }
+
+  .header-meta {
+    font-size: 0.7rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    line-height: 1.8;
+    text-align: right;
+  }
+
+  /* WEEK SELECTOR */
+  .week-bar {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 20px 32px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky;
+    top: 130px;
+    z-index: 98;
+  }
+
+  .week-bar::-webkit-scrollbar { display: none; }
+
+  .week-label {
+    font-size: 0.62rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    margin-right: 16px;
+    white-space: nowrap;
+  }
+
+  .week-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 0.06em;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+    border-right: none;
+    white-space: nowrap;
+  }
+
+  .week-btn:last-child { border-right: 1px solid var(--border); }
+
+  .week-btn:hover {
+    background: var(--surface2);
+    color: var(--text);
+  }
+
+  .week-btn.active {
+    background: var(--accent);
+    color: #000;
+    border-color: var(--accent);
+  }
+
+  .week-btn.deload {
+    color: var(--accent2);
+    border-color: var(--accent2);
+  }
+
+  .week-btn.deload.active {
+    background: var(--accent2);
+    color: #fff;
+  }
+
+  /* PHASE BADGE */
+  .phase-banner {
+    padding: 12px 32px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .phase-tag {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 0.1em;
+    padding: 4px 12px;
+    border: 1px solid currentColor;
+  }
+
+  .phase-tag.learn { color: #60a5fa; }
+  .phase-tag.build { color: var(--green); }
+  .phase-tag.push { color: var(--accent2); }
+  .phase-tag.peak { color: #f472b6; }
+  .phase-tag.deload { color: var(--accent2); }
+
+  .phase-desc {
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  /* WORKOUT TABS */
+  .workout-tabs {
+    display: flex;
+    padding: 20px 32px 0;
+    gap: 0;
+  }
+
+  .tab-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    letter-spacing: 0.08em;
+    padding: 10px 28px;
+    cursor: pointer;
+    transition: all 0.15s;
+    border-bottom: none;
+    border-right: none;
+    position: relative;
+    top: 1px;
+  }
+
+  .tab-btn:last-child { border-right: 1px solid var(--border); }
+
+  .tab-btn.active {
+    background: var(--surface);
+    color: var(--accent);
+    border-color: var(--border);
+    border-bottom: 1px solid var(--surface);
+  }
+
+  .tab-btn:hover:not(.active) {
+    color: var(--text);
+    background: var(--surface2);
+  }
+
+  /* WORKOUT PANEL */
+  .workout-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    margin: 0 32px 32px;
+    padding: 0;
+  }
+
+  .warmup-bar {
+    padding: 12px 24px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.68rem;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .warmup-bar span { color: #60a5fa; }
+
+  /* EXERCISE CARD */
+  .exercise-card {
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .exercise-card:last-child { border-bottom: none; }
+
+  .exercise-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 24px;
+    cursor: pointer;
+    transition: background 0.1s;
+    user-select: none;
+  }
+
+  .exercise-header:hover { background: var(--surface2); }
+
+  .ex-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    color: var(--border);
+    line-height: 1;
+    min-width: 36px;
+    transition: color 0.2s;
+  }
+
+  .exercise-card.open .ex-number { color: var(--accent); }
+
+  .ex-info { flex: 1; }
+
+  .ex-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    letter-spacing: 0.04em;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .ex-meta {
+    font-size: 0.62rem;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .ex-meta .target { color: var(--accent); }
+
+  .ex-progress-bar {
+    width: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+  }
+
+  .ex-progress-dots {
+    display: flex;
+    gap: 3px;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: transparent;
+    transition: all 0.2s;
+  }
+
+  .dot.done { background: var(--green); border-color: var(--green); }
+  .dot.partial { background: var(--accent2); border-color: var(--accent2); }
+
+  .ex-chevron {
+    color: var(--muted);
+    font-size: 0.8rem;
+    transition: transform 0.2s;
+  }
+
+  .exercise-card.open .ex-chevron { transform: rotate(180deg); }
+
+  /* SET LOGGER */
+  .set-logger {
+    display: none;
+    padding: 0 24px 20px;
+    background: var(--surface2);
+  }
+
+  .exercise-card.open .set-logger { display: block; }
+
+  .set-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+  }
+
+  .set-table th {
+    text-align: left;
+    color: var(--muted);
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 8px 8px 6px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 400;
+  }
+
+  .set-table td {
+    padding: 6px 8px;
+    vertical-align: middle;
+  }
+
+  .set-num {
+    color: var(--muted);
+    font-size: 0.65rem;
+    width: 28px;
+  }
+
+  .set-input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    padding: 6px 10px;
+    width: 72px;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.15s;
+    -moz-appearance: textfield;
+  }
+
+  .set-input::-webkit-outer-spin-button,
+  .set-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+  .set-input:focus { border-color: var(--accent); }
+  .set-input::placeholder { color: var(--border); }
+
+  .set-check {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.7rem;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+
+  .set-check:hover { border-color: var(--green); color: var(--green); }
+  .set-check.checked { background: var(--green); border-color: var(--green); color: #000; }
+
+  .set-note-row {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: none;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    padding: 6px 10px;
+    outline: none;
+    resize: none;
+    height: 32px;
+    margin-top: 8px;
+    transition: border-color 0.15s;
+  }
+
+  .set-note-row:focus {
+    border-color: var(--accent);
+    color: var(--text);
+    height: 56px;
+  }
+
+  .set-note-row::placeholder { color: var(--border); }
+
+  .add-set-btn {
+    margin-top: 10px;
+    background: none;
+    border: 1px dashed var(--border);
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+    width: 100%;
+  }
+
+  .add-set-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* REST TIMER */
+  .rest-timer {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: none;
+    font-family: 'DM Mono', monospace;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .rest-timer:hover { border-color: #60a5fa; color: #60a5fa; }
+  .rest-timer.running { border-color: #f472b6; color: #f472b6; animation: pulse 1s infinite; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+
+  /* WEEKLY OVERVIEW */
+  .overview-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    margin: 0 32px 0;
+    border: 1px solid var(--border);
+  }
+
+  .overview-cell {
+    background: var(--surface);
+    padding: 14px 18px;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+
+  .overview-cell:hover { background: var(--surface2); }
+
+  .ov-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    letter-spacing: 0.04em;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .ov-sub {
+    font-size: 0.58rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 2px;
+  }
+
+  .ov-pct {
+    font-size: 1rem;
+    font-family: 'Bebas Neue', sans-serif;
+    margin-top: 6px;
+  }
+
+  .ov-bar {
+    height: 3px;
+    background: var(--border);
+    margin-top: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ov-fill {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.4s ease;
+  }
+
+  /* STATS STRIP */
+  .stats-strip {
+    display: flex;
+    gap: 0;
+    margin: 1px 32px 24px;
+    border: 1px solid var(--border);
+    border-top: none;
+    overflow-x: auto;
+  }
+
+  .stat-block {
+    flex: 1;
+    padding: 12px 18px;
+    border-right: 1px solid var(--border);
+    min-width: 100px;
+  }
+
+  .stat-block:last-child { border-right: none; }
+
+  .stat-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.5rem;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .stat-lbl {
+    font-size: 0.58rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 2px;
+  }
+
+  /* TIMER OVERLAY */
+  .timer-overlay {
+    display: none;
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--surface);
+    border: 2px solid var(--accent);
+    padding: 16px 24px;
+    z-index: 200;
+    min-width: 180px;
+    text-align: center;
+  }
+
+  .timer-overlay.visible { display: block; }
+
+  .timer-count {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3rem;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .timer-label {
+    font-size: 0.6rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 4px;
+  }
+
+  .timer-close {
+    position: absolute;
+    top: 6px;
+    right: 10px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+
+  /* FORM NOTES */
+  .form-tip {
+    margin: 12px 0 0;
+    padding: 10px 12px;
+    border-left: 2px solid var(--accent2);
+    font-size: 0.68rem;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    line-height: 1.6;
+  }
+
+  .form-tip strong { color: var(--accent2); font-weight: 500; }
+
+  /* PROGRESS HISTORY */
+  .history-toggle {
+    font-size: 0.6rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-family: 'DM Mono', monospace;
+    padding: 0;
+    margin-top: 12px;
+    transition: color 0.15s;
+  }
+
+  .history-toggle:hover { color: var(--accent); }
+
+  .history-table {
+    display: none;
+    margin-top: 10px;
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.65rem;
+  }
+
+  .history-table.visible { display: table; }
+
+  .history-table th {
+    color: var(--muted);
+    font-size: 0.58rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 4px 8px;
+    text-align: left;
+    font-weight: 400;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .history-table td {
+    padding: 4px 8px;
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .history-table td:first-child { color: var(--muted); }
+
+  .pr-badge {
+    font-size: 0.55rem;
+    background: var(--accent);
+    color: #000;
+    padding: 1px 5px;
+    letter-spacing: 0.06em;
+    font-family: 'Bebas Neue', sans-serif;
+    vertical-align: middle;
+    margin-left: 4px;
+  }
+
+  /* SECTION TITLE */
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+    text-transform: uppercase;
+    padding: 24px 32px 12px;
+  }
+
+  /* DEMO BUTTON */
+  .demo-toggle-btn {
+    display: block;
+    width: 100%;
+    margin-top: 10px;
+    padding: 8px 14px;
+    background: none;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.9rem;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .demo-toggle-btn:hover { background: var(--accent); color: #000; }
+
+  /* DEMO CONTAINER */
+  .demo-container {
+    background: #111;
+    border: 1px solid var(--border);
+    border-top: none;
+    padding: 16px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .demo-label {
+    font-size: 0.6rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-top: 10px;
+  }
+
+  /* ── SHARED STICK FIGURE PARTS ── */
+  .sf { position: relative; display: inline-block; }
+  .sf svg { display: block; }
+
+  /* ─── KEYFRAMES ─── */
+
+  /* Bench Press — arms extend up/down */
+  @keyframes bp-arms {
+    0%,100% { transform: rotate(-30deg); }
+    50% { transform: rotate(10deg); }
+  }
+  @keyframes bp-arms2 {
+    0%,100% { transform: rotate(30deg); }
+    50% { transform: rotate(-10deg); }
+  }
+  @keyframes bp-bar {
+    0%,100% { transform: translateY(0px); }
+    50% { transform: translateY(-22px); }
+  }
+
+  /* Goblet Squat — body goes down */
+  @keyframes gsq-body {
+    0%,100% { transform: translateY(0px); }
+    50% { transform: translateY(18px); }
+  }
+  @keyframes gsq-knees {
+    0%,100% { transform: rotate(0deg); }
+    50% { transform: rotate(35deg); }
+  }
+
+  /* Single Arm Row — arm pulls up */
+  @keyframes row-arm {
+    0%,100% { transform: rotate(20deg); }
+    50% { transform: rotate(-35deg); }
+  }
+  @keyframes row-db {
+    0%,100% { transform: translateY(18px); }
+    50% { transform: translateY(-4px); }
+  }
+
+  /* Lateral Raise — arms lift out */
+  @keyframes lat-arm-l {
+    0%,100% { transform: rotate(80deg); }
+    50% { transform: rotate(0deg); }
+  }
+  @keyframes lat-arm-r {
+    0%,100% { transform: rotate(-80deg); }
+    50% { transform: rotate(0deg); }
+  }
+
+  /* Skullcrusher — forearms hinge at elbow */
+  @keyframes sk-fore {
+    0%,100% { transform: rotate(80deg); }
+    50% { transform: rotate(10deg); }
+  }
+  @keyframes sk-fore2 {
+    0%,100% { transform: rotate(-80deg); }
+    50% { transform: rotate(-10deg); }
+  }
+
+  /* Plank — subtle breathe */
+  @keyframes plank-breathe {
+    0%,100% { transform: scaleY(1); }
+    50% { transform: scaleY(1.04); }
+  }
+
+  /* Incline Press */
+  @keyframes inc-arm {
+    0%,100% { transform: rotate(-20deg); }
+    50% { transform: rotate(25deg); }
+  }
+
+  /* RDL — hinge forward/back */
+  @keyframes rdl-torso {
+    0%,100% { transform: rotate(0deg); }
+    50% { transform: rotate(45deg); }
+  }
+  @keyframes rdl-db {
+    0%,100% { transform: translateY(0px); }
+    50% { transform: translateY(28px); }
+  }
+
+  /* Bulgarian Split Squat — body dips */
+  @keyframes bss-body {
+    0%,100% { transform: translateY(0px); }
+    50% { transform: translateY(16px); }
+  }
+  @keyframes bss-front-knee {
+    0%,100% { transform: rotate(0deg); }
+    50% { transform: rotate(30deg); }
+  }
+
+  /* Hammer Curl */
+  @keyframes hc-arm {
+    0%,100% { transform: rotate(5deg); }
+    50% { transform: rotate(-75deg); }
+  }
+
+  /* Reverse Fly — arms open out */
+  @keyframes rfly-arm-l {
+    0%,100% { transform: rotate(10deg); }
+    50% { transform: rotate(-50deg); }
+  }
+  @keyframes rfly-arm-r {
+    0%,100% { transform: rotate(-10deg); }
+    50% { transform: rotate(50deg); }
+  }
+
+  /* Leg Raises */
+  @keyframes lr-legs {
+    0%,100% { transform: rotate(0deg); }
+    50% { transform: rotate(-80deg); }
+  }
+
+  /* OHP */
+  @keyframes ohp-arm-l {
+    0%,100% { transform: rotate(60deg); }
+    50% { transform: rotate(10deg); }
+  }
+  @keyframes ohp-arm-r {
+    0%,100% { transform: rotate(-60deg); }
+    50% { transform: rotate(-10deg); }
+  }
+  @keyframes ohp-bar {
+    0%,100% { transform: translateY(0px); }
+    50% { transform: translateY(-26px); }
+  }
+
+  /* Bent Over Row */
+  @keyframes bor-arm {
+    0%,100% { transform: rotate(30deg); }
+    50% { transform: rotate(-20deg); }
+  }
+
+  /* Dumbbell Curl */
+  @keyframes curl-arm {
+    0%,100% { transform: rotate(5deg); }
+    50% { transform: rotate(-80deg); }
+  }
+  @keyframes curl-arm2 {
+    0%,100% { transform: rotate(-5deg); }
+    50% { transform: rotate(80deg); }
+  }
+
+  /* Russian Twist */
+  @keyframes rt-torso {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(25deg); }
+    75% { transform: rotate(-25deg); }
+    100% { transform: rotate(0deg); }
+  }
+
+  /* NAV TABS */
+  .page-nav {
+    display: flex;
+    border-bottom: 2px solid var(--border);
+    background: var(--surface);
+    position: sticky;
+    top: 88px;
+    z-index: 99;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .page-nav::-webkit-scrollbar { display: none; }
+
+  .page-nav-btn {
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--muted);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 0.1em;
+    padding: 12px 24px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+    margin-bottom: -2px;
+  }
+
+  .page-nav-btn:hover { color: var(--text); }
+  .page-nav-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .page-section { display: none; }
+  .page-section.visible { display: block; }
+
+  /* PROGRAMME SECTION */
+  .programme-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    margin: 24px 32px;
+    border: 1px solid var(--border);
+  }
+
+  @media (max-width: 700px) {
+    .programme-grid { grid-template-columns: 1fr; margin: 16px; }
+  }
+
+  .prog-col {
+    background: var(--surface);
+    padding: 0;
+  }
+
+  .prog-col-header {
+    background: var(--surface2);
+    padding: 14px 20px;
+    border-bottom: 2px solid var(--accent);
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .prog-col-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+  }
+
+  .prog-col-day {
+    font-size: 0.62rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .prog-warmup {
+    padding: 10px 20px;
+    font-size: 0.63rem;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    letter-spacing: 0.04em;
+    line-height: 1.5;
+  }
+
+  .prog-warmup b { color: #60a5fa; }
+
+  .prog-ex-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+
+  .prog-ex-row:last-child { border-bottom: none; }
+  .prog-ex-row:hover { background: var(--surface2); }
+
+  .prog-ex-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    color: var(--border);
+    line-height: 1.2;
+    min-width: 18px;
+  }
+
+  .prog-ex-info { flex: 1; }
+
+  .prog-ex-name {
+    font-size: 0.78rem;
+    color: var(--text);
+    letter-spacing: 0.02em;
+    line-height: 1.3;
+    font-weight: 500;
+  }
+
+  .prog-ex-name.priority { color: var(--accent); }
+
+  .prog-ex-sets {
+    font-size: 0.6rem;
+    color: var(--muted);
+    margin-top: 3px;
+    line-height: 1.6;
+    letter-spacing: 0.04em;
+  }
+
+  .prog-ex-sets span { color: var(--text); }
+
+  .prog-phase-row {
+    display: flex;
+    gap: 0;
+    padding: 0 20px 14px;
+    margin-top: 2px;
+  }
+
+  .prog-phase-chip {
+    font-size: 0.55rem;
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 0.08em;
+    padding: 3px 8px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-right: none;
+  }
+
+  .prog-phase-chip:last-child { border-right: 1px solid var(--border); }
+
+  .prog-schedule {
+    margin: 0 32px 24px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  @media (max-width: 700px) { .prog-schedule { margin: 0 16px 20px; } }
+
+  .prog-schedule-header {
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    background: var(--surface2);
+  }
+
+  .schedule-row {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border);
+    gap: 16px;
+    font-size: 0.72rem;
+  }
+
+  .schedule-row:last-child { border-bottom: none; }
+
+  .schedule-day {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 0.06em;
+    color: var(--text);
+    min-width: 100px;
+  }
+
+  .schedule-tag {
+    padding: 3px 10px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    border: 1px solid;
+  }
+
+  .schedule-tag.A { color: #60a5fa; border-color: #60a5fa; }
+  .schedule-tag.B { color: var(--green); border-color: var(--green); }
+  .schedule-tag.C { color: var(--accent2); border-color: var(--accent2); }
+  .schedule-tag.rest { color: var(--border); border-color: var(--border); }
+
+  .schedule-desc { color: var(--muted); font-size: 0.65rem; }
+
+  .prog-progression {
+    margin: 0 32px 32px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    overflow-x: auto;
+  }
+
+  @media (max-width: 700px) { .prog-progression { margin: 0 16px 24px; } }
+
+  .prog-prog-header {
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    background: var(--surface2);
+  }
+
+  .prog-prog-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.68rem;
+    min-width: 500px;
+  }
+
+  .prog-prog-table th {
+    text-align: left;
+    padding: 8px 16px;
+    font-size: 0.58rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    font-weight: 400;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .prog-prog-table td {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    line-height: 1.5;
+  }
+
+  .prog-prog-table tr:last-child td { border-bottom: none; }
+
+  .prog-prog-table td:first-child {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  .prog-rule-box {
+    margin: 0 32px 32px;
+    border: 1px solid var(--accent2);
+    background: var(--surface);
+    padding: 16px 20px;
+  }
+
+  @media (max-width: 700px) { .prog-rule-box { margin: 0 16px 24px; } }
+
+  .prog-rule-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 0.1em;
+    color: var(--accent2);
+    margin-bottom: 8px;
+  }
+
+  .prog-rule-text {
+    font-size: 0.7rem;
+    color: var(--muted);
+    line-height: 1.8;
+    letter-spacing: 0.03em;
+  }
+
+  .prog-rule-text b { color: var(--text); }
+  @media (max-width: 600px) {
+    header { padding: 16px; }
+    .week-bar { padding: 14px 16px; }
+    .phase-banner { padding: 10px 16px; }
+    .workout-tabs { padding: 16px 16px 0; }
+    .workout-panel { margin: 0 16px 24px; }
+    .overview-grid { margin: 0 16px 0; }
+    .stats-strip { margin: 1px 16px 20px; }
+    .section-title { padding: 16px 16px 10px; }
+    .exercise-header { padding: 14px 16px; }
+    .set-logger { padding: 0 16px 16px; }
+    .tab-btn { padding: 10px 18px; font-size: 1.1rem; }
+    .set-input { width: 58px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1><span>8-WEEK</span> TRAINING<br>LOG</h1>
+  </div>
+  <div class="header-meta">
+    HOP-SPORT 45KG SET<br>
+    PASYOU ADJUSTABLE BENCH<br>
+    <span id="header-date">—</span><br>
+    <button id="install-btn" onclick="installApp()" style="display:none;margin-top:6px;background:var(--accent);color:#000;border:none;font-family:'Bebas Neue',sans-serif;font-size:0.75rem;letter-spacing:0.1em;padding:4px 10px;cursor:pointer;">⬇ ADD TO HOME SCREEN</button>
+  </div>
+</header>
+
+<nav class="page-nav">
+  <button class="page-nav-btn active" onclick="showPage('tracker')">📋 Tracker</button>
+  <button class="page-nav-btn" onclick="showPage('programme')">📄 Programme</button>
+</nav>
+
+<div id="page-tracker" class="page-section visible">
+
+<div class="week-bar">
+  <span class="week-label">Week</span>
+  <button class="week-btn active" onclick="setWeek(1)">W1</button>
+  <button class="week-btn" onclick="setWeek(2)">W2</button>
+  <button class="week-btn" onclick="setWeek(3)">W3</button>
+  <button class="week-btn" onclick="setWeek(4)">W4</button>
+  <button class="week-btn" onclick="setWeek(5)">W5</button>
+  <button class="week-btn" onclick="setWeek(6)">W6</button>
+  <button class="week-btn" onclick="setWeek(7)">W7</button>
+  <button class="week-btn deload" onclick="setWeek(8)">W8 ↓</button>
+</div>
+
+<div class="phase-banner">
+  <span class="phase-tag" id="phase-tag">LEARN</span>
+  <span class="phase-desc" id="phase-desc">Build movement patterns. Leave ~2 reps in reserve on most sets.</span>
+</div>
+
+<div class="section-title">Weekly Overview</div>
+
+<div class="overview-grid" id="overview-grid">
+  <!-- built by JS -->
+</div>
+
+<div class="stats-strip" id="stats-strip">
+  <div class="stat-block"><div class="stat-val" id="stat-sets">0</div><div class="stat-lbl">Sets Done</div></div>
+  <div class="stat-block"><div class="stat-val" id="stat-vol">0</div><div class="stat-lbl">Total KG</div></div>
+  <div class="stat-block"><div class="stat-val" id="stat-days">0/3</div><div class="stat-lbl">Days Done</div></div>
+  <div class="stat-block"><div class="stat-val" id="stat-streak">0</div><div class="stat-lbl">Wk Streak</div></div>
+</div>
+
+<div class="section-title">Today's Session</div>
+
+<div class="workout-tabs">
+  <button class="tab-btn active" onclick="setWorkout('A')">WORKOUT A</button>
+  <button class="tab-btn" onclick="setWorkout('B')">WORKOUT B</button>
+  <button class="tab-btn" onclick="setWorkout('C')">WORKOUT C</button>
+</div>
+
+<div class="workout-panel" id="workout-panel">
+  <!-- built by JS -->
+</div>
+
+</div><!-- end page-tracker -->
+
+<!-- PROGRAMME SECTION -->
+<div id="page-programme" class="page-section">
+
+  <div class="section-title">Weekly Schedule</div>
+  <div class="prog-schedule">
+    <div class="prog-schedule-header">RECOMMENDED WEEKLY RHYTHM</div>
+    <div class="schedule-row"><span class="schedule-day">Monday</span><span class="schedule-tag A">WORKOUT A</span><span class="schedule-desc">Chest · Legs · Back · Shoulders · Triceps · Core</span></div>
+    <div class="schedule-row"><span class="schedule-day">Tuesday</span><span class="schedule-tag rest">REST</span><span class="schedule-desc">Active recovery or full rest</span></div>
+    <div class="schedule-row"><span class="schedule-day">Wednesday</span><span class="schedule-tag B">WORKOUT B</span><span class="schedule-desc">Chest · Hamstrings · Legs · Biceps · Back · Core</span></div>
+    <div class="schedule-row"><span class="schedule-day">Thursday</span><span class="schedule-tag rest">REST</span><span class="schedule-desc">Active recovery or full rest</span></div>
+    <div class="schedule-row"><span class="schedule-day">Friday</span><span class="schedule-tag C">WORKOUT C</span><span class="schedule-desc">Chest · Back · Shoulders · Legs · Biceps · Core</span></div>
+    <div class="schedule-row"><span class="schedule-day">Sat / Sun</span><span class="schedule-tag rest">REST</span><span class="schedule-desc">Full rest — let your muscles grow</span></div>
+  </div>
+
+  <div class="section-title">Full Programme</div>
+  <div class="programme-grid" id="programme-grid"><!-- built by JS --></div>
+
+  <div class="section-title">8-Week Progression</div>
+  <div class="prog-progression">
+    <div class="prog-prog-header">SETS & INTENSITY BY PHASE</div>
+    <table class="prog-prog-table">
+      <thead><tr><th>Weeks</th><th>Phase</th><th>Main Lifts</th><th>Accessories</th><th>Core</th><th>Intensity</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>1–2</td>
+          <td style="color:#60a5fa">LEARN</td>
+          <td>3 sets</td><td>2–3 sets</td><td>2–3 sets</td>
+          <td style="color:var(--muted)">Leave ~2 reps in reserve. Focus on form.</td>
+        </tr>
+        <tr>
+          <td>3–4</td>
+          <td style="color:var(--green)">BUILD</td>
+          <td>4 sets</td><td>3 sets</td><td>3 sets</td>
+          <td style="color:var(--muted)">Add weight or 1–2 reps where possible.</td>
+        </tr>
+        <tr>
+          <td>5–6</td>
+          <td style="color:var(--accent2)">PUSH</td>
+          <td>4 sets</td><td>3 sets</td><td>3 sets</td>
+          <td style="color:var(--muted)">Finish main lifts with only 1–2 reps left in tank.</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td style="color:#f472b6">PEAK</td>
+          <td>4 sets</td><td>3 sets</td><td>3 sets</td>
+          <td style="color:var(--muted)">Hardest week. Beat W6 by +1 rep or small weight jump on first 2 main lifts each day.</td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td style="color:var(--accent2)">DELOAD ↓</td>
+          <td>2 sets</td><td>2 sets</td><td>2 sets</td>
+          <td style="color:var(--muted)">80–85% of week 7 weight. Stop well before failure.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="prog-rule-box">
+    <div class="prog-rule-title">⚡ Simple Progression Rule</div>
+    <div class="prog-rule-text">
+      When you hit the <b>top of the rep range on every set</b>, increase the weight next session.<br>
+      Example: W1 bench → <b>10, 9, 8</b> reps. Next session try <b>10, 10, 9</b>. Once you hit <b>12, 12, 12</b> → move the weight up.<br><br>
+      <b>Rest times:</b> 60–90 sec on most sets · 90–120 sec on heavier presses, rows, squats & RDLs.
+    </div>
+  </div>
+
+</div><!-- end page-programme -->
+
+<!-- REST TIMER OVERLAY -->
+<div class="timer-overlay" id="timer-overlay">
+  <button class="timer-close" onclick="stopTimer()">✕</button>
+  <div class="timer-count" id="timer-count">1:30</div>
+  <div class="timer-label">Rest Timer</div>
+</div>
+
+<script>
+// ─── DATA ──────────────────────────────────────────────────────────────────
+
+const WORKOUTS = {
+  A: {
+    name: 'Workout A',
+    warmup: '5 min: arm circles, BW squats, hip hinges, incline push-ups, light rows',
+    exercises: [
+      {
+        id: 'A1', name: 'Dumbbell Bench Press', focus: true,
+        tip: 'Keep shoulder blades pinched together on the bench throughout the movement.',
+        yt: 'https://www.youtube.com/results?search_query=dumbbell+bench+press+form+tutorial',
+        sets: { '1-2': '3×8–12', '3-7': '4×6–10', '8': '2×8' },
+        targetSets: { '1-2': 3, '3-7': 4, '8': 2 },
+        repRange: { '1-2': '8–12', '3-7': '6–10', '8': '8' }
+      },
+      {
+        id: 'A2', name: 'Dumbbell Goblet Squat',
+        tip: 'Hold dumbbell vertically at chest. Keep chest tall, heels planted.',
+        yt: 'https://www.youtube.com/results?search_query=dumbbell+goblet+squat+form+tutorial',
+        sets: { '1-2': '3×10–12', '3-7': '4×8–12', '8': '2×10' },
+        targetSets: { '1-2': 3, '3-7': 4, '8': 2 },
+        repRange: { '1-2': '10–12', '3-7': '8–12', '8': '10' }
+      },
+      {
+        id: 'A3', name: 'DB Single-Arm Row', focus: true,
+        tip: 'Keep your back neutral. Row to your hip, not your armpit.',
+        yt: 'https://www.youtube.com/results?search_query=dumbbell+single+arm+row+form+tutorial',
+        sets: { '1-2': '3×8–12/side', '3-7': '4×8–10/side', '8': '2×10/side' },
+        targetSets: { '1-2': 3, '3-7': 4, '8': 2 },
+        repRange: { '1-2': '8–12', '3-7': '8–10', '8': '10' }
+      },
+      {
+        id: 'A4', name: 'Dumbbell Lateral Raise',
+        tip: 'Slight bend in elbow. Lead with elbows, stop at shoulder height.',
+        yt: 'https://www.youtube.com/results?search_query=dumbbell+lateral+raise+form+tutorial',
+        sets: { '1-2': '2×12–15', '3-7': '3×12–15', '8': '2×12' },
+        targetSets: { '1-2': 2, '3-7': 3, '8': 2 },
+        repRange: { '1-2': '12–15', '3-7': '12–15', '8': '12' }
+      },
+      {
+        id: 'A5', name: 'Dumbbell Skullcrusher', focus: true,
+        tip: 'Keep elbows pointing at the ceiling. Lower until DBs are beside ears.',
+        yt: 'https://www.youtube.com/results?search_query=dumbbell+skullcrusher+tricep+form+tutorial',
+        sets: { '1-2': '2×10–12', '3-7': '3×10–12', '8': '2×10' },
+        targetSets: { '1-2': 2, '3-7': 3, '8': 2 },
+        repRange: { '1-2': '10–12', '3-7': '10–12', '8': '10' }
+      },
+      {
+        id: 'A6', name: 'Forearm Plank', isTime: true,
+        tip: 'Brace your core like you\'re bracing for a punch. Hips level.',
+        yt: 'https://www.youtube.com/results?search_query=forearm+plank+proper+form+tutorial',
+        sets: { '1-2': '2×30–40s', '3-7': '3×40–60s', '8': '2×30s' },
+        targetSets: { '1-2': 2, '3-7': 3, '8': 2 },
+        repRange: { '1-2': '30–40s', '3-7': '40–60s', '8': '30s' }
+      }
+    ]
+  },
+  B: {
+    name: 'Workout B',
+    warmup: '5 min: leg swings, hip circles, light goblet squats, upper-back openers',
+    exercises: [
+      {
+        id: 'B1', name: 'DB Incline Bench Press', focus: true,
+        tip: 'Set bench to ~30–45°. Shoulder blades retracted and depressed.',
+        yt: 'https://www.youtube.com/results?search_query=dumbbell+incline+bench+press+form+tutorial',
+        sets: { '1-2': '3×8–12', '3-7': '4×6–10', '8': '2×8' },
+        targetSets: { '1-2': 3, '3-7': 4, '8': 2 },
+        repRange: { '1-2': '8–12', '3-7': '6–10', '8': '8' }
+      },
+      {
+        id: 'B2', name: 'DB Romanian Deadlift', focus: true,
+        tip: 'Hinge at the hips, back stays neutral. Feel hamstring stretch, not lower back rounding.',
+        yt: 'https://www.youtube.com/results?search_query=dumbbell+romanian+deadlift+form+tutorial',
+        sets: { '1-2': '3×8–12', '3-7': '4×8–10', '8': '2×8' },
+        targetSets: { '1-2': 3, '3-7': 4, '8': 2 },
+        repRange: { '1-2': '8–12', '3-7': '8–10', '8': '8' }
+      },
+      {
+        id: 'B3', name: 'Bulgarian Split Squat',
+        tip: 'Go controlled, not fast. Rear foot on bench. Front foot far enough forward that knee stays over toe.',
+        yt: 'https://www.youtube.com/results?search_query=bulgarian+split+squat+dumbbell+form+tutorial',
+        sets: { '1-2': '3×8–10/leg', '3-7': '3×8–10/leg', '8': '2×8/leg' },
+        targetSets: { '1-2': 3, '3-7': 3, '8': 2 },
+        repRange: { '1-2': '8–10', '3-7': '8–10', '8': '8' }
+      },
+      {
+        id: 'B4', name: 'Dumbbell Hammer Curl', focus: true,
+        tip: 'Neutral grip, elbows pinned to sides. Full extension at the bottom.',
+        yt: 'https://www.youtube.com/results?search_query=dumbbell+hammer+curl+form+tutorial',
+        sets: { '1-2': '2×10–12', '3-7': '3×10–12', '8': '2×10' },
+        targetSets: { '1-2': 2, '3-7': 3, '8': 2 },
+        repRange: { '1-2': '10–12', '3-7': '10–12', '8': '10' }
+      },
+      {
+        id: 'B5', name: 'DB Laying Reverse Fly', focus: true,
+        tip: 'Lie prone on bench. Slight elbow bend. Think about pinching your shoulder blades.',
+        yt: 'https://www.youtube.com/results?search_query=dumbbell+reverse+fly+prone+bench+form+tutorial',
+        sets: { '1-2': '2×12–15', '3-7': '3×12–15', '8': '2×12' },
+        targetSets: { '1-2': 2, '3-7': 3, '8': 2 },
+        repRange: { '1-2': '12–15', '3-7': '12–15', '8': '12' }
+      },
+      {
+        id: 'B6', name: 'Laying Leg Raises', isTime: false,
+        tip: 'Lower legs slowly. Press lower back into floor. Controlled all the way down.',
+        yt: 'https://www.youtube.com/results?search_query=lying+leg+raises+core+form+tutorial',
+        sets: { '1-2': '2×10–15', '3-7': '3×12–15', '8': '2×10' },
+        targetSets: { '1-2': 2, '3-7': 3, '8': 2 },
+        repRange: { '1-2': '10–15', '3-7': '12–15', '8': '10' }
+      }
+    ]
+  },
+  C: {
+    name: 'Workout C',
+    warmup: '5 min: shoulder rotations, band pull-aparts, light presses, bodyweight hinges',
+    exercises: [
+      {
+        id: 'C1', name: 'Dumbbell Bench Press', focus: true,
+        tip: 'Keep shoulder blades pinched together on the bench throughout the movement.',
+        yt: 'https://www.youtube.com/results?search_query=dumbbell+bench+press+form+tutorial',
+        sets: { '1-2': '3×10', '3-7': '4×8–10', '8': '2×8' },
+        targetSets: { '1-2': 3, '3-7': 4, '8': 2 },
+        repRange: { '1-2': '10', '3-7': '8–10', '8': '8' }
+      },
+      {
+        id: 'C2', name: 'Barbell Bent Over Row', focus: true,
+        tip: 'Hinge to ~45°. Pull bar to lower chest/upper abs. Back stays neutral.',
+        yt: 'https://www.youtube.com/results?search_query=barbell+bent+over+row+form+tutorial',
+        sets: { '1-2': '3×8–12', '3-7': '4×6–10', '8': '2×8' },
+        targetSets: { '1-2': 3, '3-7': 4, '8': 2 },
+        repRange: { '1-2': '8–12', '3-7': '6–10', '8': '8' }
+      },
+      {
+        id: 'C3', name: 'DB Overhead Press',
+        tip: 'Press straight up. Avoid flaring ribs. Brace core throughout.',
+        yt: 'https://www.youtube.com/results?search_query=dumbbell+overhead+press+seated+form+tutorial',
+        sets: { '1-2': '3×8–10', '3-7': '4×6–10', '8': '2×8' },
+        targetSets: { '1-2': 3, '3-7': 4, '8': 2 },
+        repRange: { '1-2': '8–10', '3-7': '6–10', '8': '8' }
+      },
+      {
+        id: 'C4', name: 'Dumbbell Goblet Squat',
+        tip: 'Hold dumbbell vertically at chest. Keep chest tall, heels planted.',
+        yt: 'https://www.youtube.com/results?search_query=dumbbell+goblet+squat+form+tutorial',
+        sets: { '1-2': '3×10', '3-7': '3×10–12', '8': '2×10' },
+        targetSets: { '1-2': 3, '3-7': 3, '8': 2 },
+        repRange: { '1-2': '10', '3-7': '10–12', '8': '10' }
+      },
+      {
+        id: 'C5', name: 'Dumbbell Curl', focus: true,
+        tip: 'Supinate at the top (palm rotates up). Full extension at bottom.',
+        yt: 'https://www.youtube.com/results?search_query=dumbbell+bicep+curl+form+tutorial',
+        sets: { '1-2': '2×10–12', '3-7': '3×10–12', '8': '2×10' },
+        targetSets: { '1-2': 2, '3-7': 3, '8': 2 },
+        repRange: { '1-2': '10–12', '3-7': '10–12', '8': '10' }
+      },
+      {
+        id: 'C6', name: 'DB Russian Twist', isTime: false,
+        tip: 'Lean back ~45°, feet off floor if possible. Rotate fully each side.',
+        yt: 'https://www.youtube.com/results?search_query=dumbbell+russian+twist+core+form+tutorial',
+        sets: { '1-2': '2×16–20', '3-7': '3×20', '8': '2×16' },
+        targetSets: { '1-2': 2, '3-7': 3, '8': 2 },
+        repRange: { '1-2': '16–20', '3-7': '20', '8': '16' }
+      }
+    ]
+  }
+};
+
+const PHASES = {
+  '1-2': { tag: 'LEARN', cls: 'learn', desc: 'Build movement patterns. Leave ~2 reps in reserve on most sets.' },
+  '3-4': { tag: 'BUILD', cls: 'build', desc: 'Add weight or reps where possible. Increase to 4 sets on main lifts.' },
+  '5-6': { tag: 'PUSH', cls: 'push', desc: 'Push harder. Finish main lifts with only 1–2 reps left in the tank.' },
+  '7': { tag: 'PEAK', cls: 'peak', desc: 'Hardest week. Beat week 6 by +1 rep or small weight increase on first 2 main lifts.' },
+  '8': { tag: 'DELOAD', cls: 'deload', desc: '2 sets per exercise. 80–85% of week 7 weight. Stop well before failure.' }
+};
+
+// ─── STATE ─────────────────────────────────────────────────────────────────
+let currentWeek = 1;
+let currentWorkout = 'A';
+let timerInterval = null;
+let timerSecs = 0;
+
+function getPhaseKey(w) {
+  if (w <= 2) return '1-2';
+  if (w <= 4) return '3-4';
+  if (w <= 6) return '5-6';
+  if (w === 7) return '7';
+  return '8';
+}
+
+function getSetKey(w) {
+  if (w <= 2) return '1-2';
+  if (w <= 7) return '3-7';
+  return '8';
+}
+
+// ─── STORAGE ───────────────────────────────────────────────────────────────
+function saveKey(week, workout, exId, setIdx, field, val) {
+  const k = `wk${week}_${workout}_${exId}_s${setIdx}_${field}`;
+  localStorage.setItem(k, val);
+}
+
+function loadKey(week, workout, exId, setIdx, field) {
+  const k = `wk${week}_${workout}_${exId}_s${setIdx}_${field}`;
+  return localStorage.getItem(k) || '';
+}
+
+function saveNote(week, workout, exId, val) {
+  localStorage.setItem(`wk${week}_${workout}_${exId}_note`, val);
+}
+
+function loadNote(week, workout, exId) {
+  return localStorage.getItem(`wk${week}_${workout}_${exId}_note`) || '';
+}
+
+function saveExOpen(week, workout, exId, val) {
+  localStorage.setItem(`open_${week}_${workout}_${exId}`, val ? '1' : '');
+}
+
+function loadExOpen(week, workout, exId) {
+  return !!localStorage.getItem(`open_${week}_${workout}_${exId}`);
+}
+
+// ─── STATS ─────────────────────────────────────────────────────────────────
+function computeStats() {
+  let totalSets = 0, totalVol = 0, daysDone = 0;
+  const w = currentWeek;
+  ['A','B','C'].forEach(wo => {
+    let woDone = true;
+    WORKOUTS[wo].exercises.forEach(ex => {
+      const sk = getSetKey(w);
+      const tSets = ex.targetSets[sk];
+      let exAllDone = true;
+      for (let s = 0; s < tSets; s++) {
+        const checked = loadKey(w, wo, ex.id, s, 'checked');
+        const weight = parseFloat(loadKey(w, wo, ex.id, s, 'weight')) || 0;
+        const reps = parseFloat(loadKey(w, wo, ex.id, s, 'reps')) || 0;
+        if (checked === '1') { totalSets++; totalVol += weight * reps; }
+        else exAllDone = false;
+      }
+      if (!exAllDone) woDone = false;
+    });
+    if (woDone) daysDone++;
+  });
+
+  // streak = consecutive weeks with at least 1 workout done
+  let streak = 0;
+  for (let wk = currentWeek; wk >= 1; wk--) {
+    let hasAny = false;
+    ['A','B','C'].forEach(wo => {
+      WORKOUTS[wo].exercises.forEach(ex => {
+        if (loadKey(wk, wo, ex.id, 0, 'checked') === '1') hasAny = true;
+      });
+    });
+    if (hasAny) streak++;
+    else break;
+  }
+
+  document.getElementById('stat-sets').textContent = totalSets;
+  document.getElementById('stat-vol').textContent = Math.round(totalVol);
+  document.getElementById('stat-days').textContent = daysDone + '/3';
+  document.getElementById('stat-streak').textContent = streak;
+}
+
+// ─── OVERVIEW ──────────────────────────────────────────────────────────────
+function buildOverview() {
+  const grid = document.getElementById('overview-grid');
+  grid.innerHTML = '';
+  const w = currentWeek;
+  ['A','B','C'].forEach(wo => {
+    const exList = WORKOUTS[wo].exercises;
+    let done = 0, total = 0;
+    exList.forEach(ex => {
+      const sk = getSetKey(w);
+      const tSets = ex.targetSets[sk];
+      for (let s = 0; s < tSets; s++) {
+        total++;
+        if (loadKey(w, wo, ex.id, s, 'checked') === '1') done++;
+      }
+    });
+    const pct = total ? Math.round((done / total) * 100) : 0;
+    const cell = document.createElement('div');
+    cell.className = 'overview-cell';
+    cell.innerHTML = `
+      <div class="ov-label">WO ${wo}</div>
+      <div class="ov-sub">Workout ${wo}</div>
+      <div class="ov-pct" style="color:${pct===100?'var(--green)':pct>0?'var(--accent)':'var(--muted)'}">${pct}%</div>
+      <div class="ov-bar"><div class="ov-fill" style="width:${pct}%;background:${pct===100?'var(--green)':'var(--accent)'}"></div></div>
+    `;
+    cell.onclick = () => setWorkout(wo);
+    grid.appendChild(cell);
+  });
+}
+
+// ─── WORKOUT PANEL ─────────────────────────────────────────────────────────
+function buildWorkout() {
+  const panel = document.getElementById('workout-panel');
+  const w = currentWeek;
+  const wo = WORKOUTS[currentWorkout];
+  const sk = getSetKey(w);
+
+  let html = `<div class="warmup-bar"><span>WARM-UP:</span> ${wo.warmup}</div>`;
+
+  wo.exercises.forEach((ex, idx) => {
+    const tSets = ex.targetSets[sk];
+    const repRange = ex.repRange[sk];
+    const isOpen = loadExOpen(w, currentWorkout, ex.id);
+
+    // dot indicators
+    let dots = '';
+    for (let s = 0; s < tSets; s++) {
+      const checked = loadKey(w, currentWorkout, ex.id, s, 'checked');
+      dots += `<div class="dot ${checked === '1' ? 'done' : ''}"></div>`;
+    }
+
+    const focusMark = ex.focus ? '<span style="color:var(--accent);margin-left:6px;font-size:0.6rem">★ PRIORITY</span>' : '';
+
+    // build set rows
+    let setRows = '';
+    for (let s = 0; s < tSets; s++) {
+      const wt = loadKey(w, currentWorkout, ex.id, s, 'weight');
+      const reps = loadKey(w, currentWorkout, ex.id, s, 'reps');
+      const checked = loadKey(w, currentWorkout, ex.id, s, 'checked');
+      setRows += `
+        <tr>
+          <td class="set-num">${s+1}</td>
+          <td><input class="set-input" type="number" placeholder="kg" value="${wt}"
+            onchange="saveField('${ex.id}',${s},'weight',this.value)" step="0.5" min="0"></td>
+          <td><input class="set-input" type="number" placeholder="${repRange.split('–')[0]}" value="${reps}"
+            onchange="saveField('${ex.id}',${s},'reps',this.value)" step="1" min="0"></td>
+          <td><button class="set-check ${checked==='1'?'checked':''}"
+            onclick="toggleCheck('${ex.id}',${s},this)">${checked==='1'?'✓':'○'}</button></td>
+        </tr>`;
+    }
+
+    const note = loadNote(w, currentWorkout, ex.id);
+
+    html += `
+      <div class="exercise-card${isOpen?' open':''}" id="card-${ex.id}">
+        <div class="exercise-header" onclick="toggleCard('${ex.id}')">
+          <div class="ex-number">${idx+1}</div>
+          <div class="ex-info">
+            <div class="ex-name">${ex.name}${focusMark}</div>
+            <div class="ex-meta"><span class="target">${tSets} sets × ${repRange}</span>${ex.sets[sk] !== ex.sets['1-2'] ? '' : ''}</div>
+          </div>
+          <div class="ex-progress-bar">
+            <div class="ex-progress-dots">${dots}</div>
+          </div>
+          <span class="ex-chevron">▼</span>
+        </div>
+        <div class="set-logger">
+          <table class="set-table">
+            <thead><tr><th>SET</th><th>WEIGHT (KG)</th><th>REPS</th><th>DONE</th></tr></thead>
+            <tbody>${setRows}</tbody>
+          </table>
+          <button class="add-set-btn" onclick="addSet('${ex.id}','${ex.repRange[sk]}')">+ Add Set</button>
+          <div class="form-tip"><strong>FORM:</strong> ${ex.tip}</div>
+          <button class="demo-toggle-btn" onclick="toggleDemo('${ex.id}')">▶ SHOW EXERCISE DEMO</button>
+          <div class="demo-container" id="demo-${ex.id}" style="display:none;">${getExerciseDemo(ex.id)}</div>
+          <button class="rest-timer" id="rest-${ex.id}" onclick="startTimer('${ex.id}')">⏱ START REST TIMER</button>
+          <textarea class="set-note-row" placeholder="Session notes for this exercise…"
+            onchange="saveNote(${w},'${currentWorkout}','${ex.id}',this.value)">${note}</textarea>
+          <button class="history-toggle" onclick="toggleHistory('${ex.id}')">▸ Previous weeks</button>
+          <table class="history-table" id="hist-${ex.id}">
+            <thead><tr><th>WK</th><th>SET 1</th><th>SET 2</th><th>SET 3</th><th>SET 4</th></tr></thead>
+            <tbody>${buildHistoryRows(ex.id)}</tbody>
+          </table>
+        </div>
+      </div>`;
+  });
+
+  panel.innerHTML = html;
+}
+
+function toggleDemo(exId) {
+  const d = document.getElementById('demo-' + exId);
+  const btn = d.previousElementSibling;
+  if (d.style.display === 'none') {
+    d.style.display = 'block';
+    btn.textContent = '▼ HIDE DEMO';
+  } else {
+    d.style.display = 'none';
+    btn.textContent = '▶ SHOW EXERCISE DEMO';
+  }
+}
+
+function getExerciseDemo(exId) {
+  // Map exercise IDs to canonical demo keys (C1=A1 same exercise etc)
+  const map = {
+    A1:'bench', A2:'goblet', A3:'row1arm', A4:'lateral', A5:'skull', A6:'plank',
+    B1:'incline', B2:'rdl', B3:'bss', B4:'hammer', B5:'rfly', B6:'legraise',
+    C1:'bench', C2:'bentrow', C3:'ohp', C4:'goblet', C5:'curl', C6:'twist'
+  };
+  const key = map[exId] || 'bench';
+  const demos = {
+
+    bench: `<svg width="220" height="160" viewBox="0 0 220 160" xmlns="http://www.w3.org/2000/svg">
+      <!-- bench -->
+      <rect x="30" y="105" width="160" height="12" rx="3" fill="#2a2a2a" stroke="#444" stroke-width="1"/>
+      <rect x="40" y="117" width="8" height="25" fill="#222"/>
+      <rect x="172" y="117" width="8" height="25" fill="#222"/>
+      <!-- body on bench -->
+      <rect x="55" y="88" width="110" height="18" rx="8" fill="#e8ff47" opacity="0.15" stroke="#e8ff47" stroke-width="1"/>
+      <!-- head -->
+      <circle cx="175" cy="84" r="12" fill="none" stroke="#e8ff47" stroke-width="2"/>
+      <!-- torso already covered by bench line -->
+      <!-- LEFT ARM group, pivots at shoulder ~(80,90) -->
+      <g style="transform-origin:80px 90px; animation: bp-arms 1.8s ease-in-out infinite;">
+        <line x1="80" y1="90" x2="58" y2="68" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+        <rect x="46" y="62" width="24" height="7" rx="3" fill="#888" stroke="#aaa" stroke-width="1"/>
+        <circle cx="43" cy="65" r="5" fill="#555" stroke="#888"/>
+        <circle cx="73" cy="65" r="5" fill="#555" stroke="#888"/>
+      </g>
+      <!-- RIGHT ARM group -->
+      <g style="transform-origin:140px 90px; animation: bp-arms2 1.8s ease-in-out infinite;">
+        <line x1="140" y1="90" x2="162" y2="68" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+        <rect x="150" y="62" width="24" height="7" rx="3" fill="#888" stroke="#aaa" stroke-width="1"/>
+        <circle cx="147" cy="65" r="5" fill="#555" stroke="#888"/>
+        <circle cx="177" cy="65" r="5" fill="#555" stroke="#888"/>
+      </g>
+      <!-- legs -->
+      <line x1="60" y1="106" x2="48" y2="138" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <line x1="48" y1="138" x2="38" y2="138" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <line x1="75" y1="106" x2="63" y2="138" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <line x1="63" y1="138" x2="53" y2="138" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+    </svg>
+    <div class="demo-label">Dumbbell Bench Press — press to full extension, control down</div>`,
+
+    goblet: `<svg width="220" height="180" viewBox="0 0 220 180" xmlns="http://www.w3.org/2000/svg">
+      <!-- floor -->
+      <line x1="20" y1="162" x2="200" y2="162" stroke="#333" stroke-width="2"/>
+      <!-- animated body group -->
+      <g style="transform-origin:110px 100px; animation: gsq-body 2s ease-in-out infinite;">
+        <!-- head -->
+        <circle cx="110" cy="52" r="13" fill="none" stroke="#e8ff47" stroke-width="2"/>
+        <!-- torso -->
+        <line x1="110" y1="65" x2="110" y2="115" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+        <!-- dumbbell held at chest -->
+        <rect x="96" y="72" width="28" height="9" rx="4" fill="#888" stroke="#aaa" stroke-width="1"/>
+        <circle cx="93" cy="76" r="5" fill="#555" stroke="#888"/>
+        <circle cx="127" cy="76" r="5" fill="#555" stroke="#888"/>
+        <!-- arms holding -->
+        <line x1="96" y1="76" x2="88" y2="90" stroke="#e8ff47" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="124" y1="76" x2="132" y2="90" stroke="#e8ff47" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="88" y1="90" x2="96" y2="76" stroke="#e8ff47" stroke-width="2" opacity="0.4"/>
+        <!-- thighs - pivot at hips -->
+        <g style="transform-origin:97px 115px; animation: gsq-knees 2s ease-in-out infinite;">
+          <line x1="97" y1="115" x2="82" y2="148" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+          <line x1="82" y1="148" x2="72" y2="162" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+        </g>
+        <g style="transform-origin:123px 115px; animation: gsq-knees 2s ease-in-out infinite;">
+          <line x1="123" y1="115" x2="138" y2="148" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+          <line x1="138" y1="148" x2="148" y2="162" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+        </g>
+      </g>
+    </svg>
+    <div class="demo-label">Goblet Squat — chest tall, knees track toes, heels down</div>`,
+
+    row1arm: `<svg width="220" height="170" viewBox="0 0 220 170" xmlns="http://www.w3.org/2000/svg">
+      <!-- bench for support -->
+      <rect x="20" y="100" width="80" height="10" rx="3" fill="#2a2a2a" stroke="#444" stroke-width="1"/>
+      <rect x="25" y="110" width="6" height="20" fill="#222"/>
+      <rect x="89" y="110" width="6" height="20" fill="#222"/>
+      <!-- floor -->
+      <line x1="10" y1="150" x2="210" y2="150" stroke="#333" stroke-width="2"/>
+      <!-- body hinging forward ~45deg, static torso -->
+      <circle cx="80" cy="62" r="12" fill="none" stroke="#e8ff47" stroke-width="2"/>
+      <!-- torso angled -->
+      <line x1="80" y1="74" x2="55" y2="100" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <!-- support arm -->
+      <line x1="55" y1="100" x2="35" y2="100" stroke="#e8ff47" stroke-width="2.5" stroke-linecap="round"/>
+      <!-- back leg -->
+      <line x1="55" y1="100" x2="45" y2="150" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <line x1="45" y1="150" x2="30" y2="150" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <!-- front leg -->
+      <line x1="55" y1="100" x2="80" y2="150" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <line x1="80" y1="150" x2="95" y2="150" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <!-- rowing arm at shoulder -->
+      <g style="transform-origin:80px 80px; animation: row-arm 1.8s ease-in-out infinite;">
+        <line x1="80" y1="80" x2="130" y2="100" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+        <!-- dumbbell at end -->
+        <g style="animation: row-db 1.8s ease-in-out infinite; transform-origin:130px 100px;">
+          <rect x="122" y="96" width="18" height="8" rx="3" fill="#888" stroke="#aaa" stroke-width="1"/>
+          <circle cx="120" cy="100" r="5" fill="#555" stroke="#888"/>
+          <circle cx="142" cy="100" r="5" fill="#555" stroke="#888"/>
+        </g>
+      </g>
+    </svg>
+    <div class="demo-label">Single-Arm Row — elbow drives up to hip, back neutral</div>`,
+
+    lateral: `<svg width="220" height="180" viewBox="0 0 220 180" xmlns="http://www.w3.org/2000/svg">
+      <line x1="20" y1="165" x2="200" y2="165" stroke="#333" stroke-width="2"/>
+      <!-- head -->
+      <circle cx="110" cy="48" r="13" fill="none" stroke="#e8ff47" stroke-width="2"/>
+      <!-- torso -->
+      <line x1="110" y1="61" x2="110" y2="115" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <!-- legs -->
+      <line x1="110" y1="115" x2="95" y2="165" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <line x1="95" y1="165" x2="80" y2="165" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <line x1="110" y1="115" x2="125" y2="165" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <line x1="125" y1="165" x2="140" y2="165" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <!-- LEFT arm with dumbbell -->
+      <g style="transform-origin:102px 78px; animation: lat-arm-l 2s ease-in-out infinite;">
+        <line x1="102" y1="78" x2="60" y2="90" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+        <rect x="48" y="86" width="16" height="7" rx="3" fill="#888" stroke="#aaa" stroke-width="1"/>
+        <circle cx="46" cy="89" r="4" fill="#555" stroke="#888"/>
+        <circle cx="66" cy="89" r="4" fill="#555" stroke="#888"/>
+      </g>
+      <!-- RIGHT arm with dumbbell -->
+      <g style="transform-origin:118px 78px; animation: lat-arm-r 2s ease-in-out infinite;">
+        <line x1="118" y1="78" x2="160" y2="90" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+        <rect x="156" y="86" width="16" height="7" rx="3" fill="#888" stroke="#aaa" stroke-width="1"/>
+        <circle cx="154" cy="89" r="4" fill="#555" stroke="#888"/>
+        <circle cx="174" cy="89" r="4" fill="#555" stroke="#888"/>
+      </g>
+    </svg>
+    <div class="demo-label">Lateral Raise — lead with elbows, stop at shoulder height</div>`,
+
+    skull: `<svg width="220" height="160" viewBox="0 0 220 160" xmlns="http://www.w3.org/2000/svg">
+      <!-- bench -->
+      <rect x="30" y="105" width="160" height="12" rx="3" fill="#2a2a2a" stroke="#444" stroke-width="1"/>
+      <rect x="40" y="117" width="8" height="25" fill="#222"/>
+      <rect x="172" y="117" width="8" height="25" fill="#222"/>
+      <!-- body -->
+      <rect x="55" y="88" width="110" height="18" rx="8" fill="#e8ff47" opacity="0.1" stroke="#e8ff47" stroke-width="1"/>
+      <circle cx="175" cy="84" r="12" fill="none" stroke="#e8ff47" stroke-width="2"/>
+      <!-- upper arms (static, pointing up) -->
+      <line x1="88" y1="96" x2="88" y2="68" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <line x1="132" y1="96" x2="132" y2="68" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <!-- LEFT forearm hinging at elbow (88,68) -->
+      <g style="transform-origin:88px 68px; animation: sk-fore 1.8s ease-in-out infinite;">
+        <line x1="88" y1="68" x2="88" y2="46" stroke="#e8ff47" stroke-width="2.5" stroke-linecap="round"/>
+        <rect x="76" y="40" width="24" height="7" rx="3" fill="#888" stroke="#aaa" stroke-width="1"/>
+        <circle cx="73" cy="43" r="4" fill="#555" stroke="#888"/>
+        <circle cx="103" cy="43" r="4" fill="#555" stroke="#888"/>
+      </g>
+      <!-- RIGHT forearm hinging at elbow (132,68) -->
+      <g style="transform-origin:132px 68px; animation: sk-fore2 1.8s ease-in-out infinite;">
+        <line x1="132" y1="68" x2="132" y2="46" stroke="#e8ff47" stroke-width="2.5" stroke-linecap="round"/>
+      </g>
+      <!-- legs -->
+      <line x1="60" y1="106" x2="48" y2="138" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <line x1="48" y1="138" x2="38" y2="138" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <line x1="75" y1="106" x2="63" y2="138" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <line x1="63" y1="138" x2="53" y2="138" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+    </svg>
+    <div class="demo-label">Skullcrusher — only forearms move, elbows stay pointed up</div>`,
+
+    plank: `<svg width="220" height="140" viewBox="0 0 220 140" xmlns="http://www.w3.org/2000/svg">
+      <line x1="10" y1="118" x2="210" y2="118" stroke="#333" stroke-width="2"/>
+      <!-- full body planked, horizontal -->
+      <g style="transform-origin:110px 100px; animation: plank-breathe 3s ease-in-out infinite;">
+        <!-- forearms on floor -->
+        <line x1="50" y1="106" x2="80" y2="106" stroke="#e8ff47" stroke-width="4" stroke-linecap="round"/>
+        <line x1="140" y1="106" x2="170" y2="106" stroke="#e8ff47" stroke-width="4" stroke-linecap="round"/>
+        <!-- body -->
+        <rect x="60" y="88" width="100" height="20" rx="6" fill="#e8ff47" opacity="0.12" stroke="#e8ff47" stroke-width="2"/>
+        <!-- head -->
+        <circle cx="175" cy="95" r="11" fill="none" stroke="#e8ff47" stroke-width="2"/>
+        <!-- toes -->
+        <line x1="50" y1="100" x2="36" y2="108" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+        <line x1="56" y1="100" x2="42" y2="108" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+        <!-- hip line -->
+        <line x1="100" y1="88" x2="100" y2="108" stroke="#e8ff47" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.4"/>
+      </g>
+      <!-- label arrow for hips -->
+      <text x="85" y="78" font-size="9" fill="#666" font-family="monospace">hips level</text>
+      <line x1="100" y1="80" x2="100" y2="88" stroke="#444" stroke-width="1" marker-end="url(#arr)"/>
+    </svg>
+    <div class="demo-label">Forearm Plank — rigid body, hips level, core braced hard</div>`,
+
+    incline: `<svg width="220" height="170" viewBox="0 0 220 170" xmlns="http://www.w3.org/2000/svg">
+      <!-- inclined bench -->
+      <rect x="30" y="82" width="130" height="12" rx="3" transform="rotate(-25 30 88)" fill="#2a2a2a" stroke="#444" stroke-width="1"/>
+      <rect x="30" y="94" width="8" height="30" transform="rotate(-10 34 94)" fill="#222"/>
+      <rect x="140" y="78" width="8" height="45" fill="#222"/>
+      <!-- backrest -->
+      <rect x="148" y="40" width="12" height="48" rx="3" fill="#2a2a2a" stroke="#444" stroke-width="1"/>
+      <!-- floor -->
+      <line x1="10" y1="155" x2="210" y2="155" stroke="#333" stroke-width="2"/>
+      <!-- person seated/reclined on incline -->
+      <circle cx="152" cy="30" r="12" fill="none" stroke="#e8ff47" stroke-width="2"/>
+      <!-- torso leaned back ~30deg -->
+      <line x1="152" y1="42" x2="128" y2="88" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <!-- left arm -->
+      <g style="transform-origin:136px 58px; animation: inc-arm 1.8s ease-in-out infinite;">
+        <line x1="136" y1="58" x2="108" y2="42" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+        <rect x="96" y="38" width="18" height="7" rx="3" fill="#888" stroke="#aaa" stroke-width="1"/>
+        <circle cx="93" cy="41" r="4" fill="#555" stroke="#888"/>
+        <circle cx="117" cy="41" r="4" fill="#555" stroke="#888"/>
+      </g>
+      <!-- right arm (mirrored) -->
+      <g style="transform-origin:144px 58px; animation: bp-arms2 1.8s ease-in-out infinite;">
+        <line x1="144" y1="58" x2="170" y2="42" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+        <rect x="162" y="38" width="18" height="7" rx="3" fill="#888" stroke="#aaa" stroke-width="1"/>
+        <circle cx="160" cy="41" r="4" fill="#555" stroke="#888"/>
+        <circle cx="182" cy="41" r="4" fill="#555" stroke="#888"/>
+      </g>
+      <!-- legs down -->
+      <line x1="128" y1="88" x2="112" y2="130" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <line x1="112" y1="130" x2="95" y2="155" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <line x1="128" y1="88" x2="145" y2="130" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <line x1="145" y1="130" x2="160" y2="155" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+    </svg>
+    <div class="demo-label">Incline Press — bench ~30-45°, blades retracted, press to lockout</div>`,
+
+    rdl: `<svg width="220" height="190" viewBox="0 0 220 190" xmlns="http://www.w3.org/2000/svg">
+      <line x1="10" y1="170" x2="210" y2="170" stroke="#333" stroke-width="2"/>
+      <!-- head -->
+      <circle cx="110" cy="44" r="13" fill="none" stroke="#e8ff47" stroke-width="2"/>
+      <!-- torso hinging fwd at hips -->
+      <g style="transform-origin:110px 120px; animation: rdl-torso 2.2s ease-in-out infinite;">
+        <line x1="110" y1="57" x2="110" y2="120" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+        <!-- arms hanging -->
+        <line x1="100" y1="80" x2="88" y2="120" stroke="#e8ff47" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="120" y1="80" x2="132" y2="120" stroke="#e8ff47" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- dumbbells -->
+        <g style="animation: rdl-db 2.2s ease-in-out infinite; transform-origin:88px 120px;">
+          <rect x="80" y="118" width="16" height="6" rx="2" fill="#888" stroke="#aaa" stroke-width="1"/>
+          <circle cx="78" cy="121" r="4" fill="#555" stroke="#888"/>
+          <circle cx="98" cy="121" r="4" fill="#555" stroke="#888"/>
+        </g>
+        <g style="animation: rdl-db 2.2s ease-in-out infinite; transform-origin:132px 120px;">
+          <rect x="124" y="118" width="16" height="6" rx="2" fill="#888" stroke="#aaa" stroke-width="1"/>
+          <circle cx="122" cy="121" r="4" fill="#555" stroke="#888"/>
+          <circle cx="142" cy="121" r="4" fill="#555" stroke="#888"/>
+        </g>
+      </g>
+      <!-- legs (static, slight bend) -->
+      <line x1="103" y1="120" x2="96" y2="170" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <line x1="96" y1="170" x2="80" y2="170" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <line x1="117" y1="120" x2="124" y2="170" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <line x1="124" y1="170" x2="140" y2="170" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+    </svg>
+    <div class="demo-label">Romanian Deadlift — hinge at hips, feel hamstrings stretch, back flat</div>`,
+
+    bss: `<svg width="220" height="190" viewBox="0 0 220 190" xmlns="http://www.w3.org/2000/svg">
+      <!-- bench behind for rear foot -->
+      <rect x="130" y="128" width="70" height="10" rx="3" fill="#2a2a2a" stroke="#444" stroke-width="1"/>
+      <rect x="135" y="138" width="6" height="18" fill="#222"/>
+      <rect x="189" y="138" width="6" height="18" fill="#222"/>
+      <!-- floor -->
+      <line x1="10" y1="172" x2="210" y2="172" stroke="#333" stroke-width="2"/>
+      <!-- animated body dipping -->
+      <g style="transform-origin:95px 100px; animation: bss-body 2s ease-in-out infinite;">
+        <!-- head -->
+        <circle cx="95" cy="36" r="13" fill="none" stroke="#e8ff47" stroke-width="2"/>
+        <!-- torso upright -->
+        <line x1="95" y1="49" x2="95" y2="108" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+        <!-- arms with DBs at sides -->
+        <line x1="88" y1="68" x2="75" y2="108" stroke="#e8ff47" stroke-width="2.5" stroke-linecap="round"/>
+        <rect x="67" y="106" width="14" height="6" rx="2" fill="#888" stroke="#aaa" stroke-width="1"/>
+        <circle cx="65" cy="109" r="4" fill="#555" stroke="#888"/>
+        <circle cx="83" cy="109" r="4" fill="#555" stroke="#888"/>
+        <line x1="102" y1="68" x2="115" y2="108" stroke="#e8ff47" stroke-width="2.5" stroke-linecap="round"/>
+        <rect x="109" y="106" width="14" height="6" rx="2" fill="#888" stroke="#aaa" stroke-width="1"/>
+        <circle cx="107" cy="109" r="4" fill="#555" stroke="#888"/>
+        <circle cx="125" cy="109" r="4" fill="#555" stroke="#888"/>
+        <!-- FRONT leg with knee bend animation -->
+        <g style="transform-origin:95px 108px; animation: bss-front-knee 2s ease-in-out infinite;">
+          <line x1="95" y1="108" x2="72" y2="150" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+          <line x1="72" y1="150" x2="58" y2="172" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+          <line x1="58" y1="172" x2="40" y2="172" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+        </g>
+        <!-- REAR leg, elevated on bench, static -->
+        <line x1="95" y1="108" x2="132" y2="128" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+        <line x1="132" y1="128" x2="155" y2="128" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      </g>
+    </svg>
+    <div class="demo-label">Bulgarian Split Squat — controlled descent, front knee over toe</div>`,
+
+    hammer: `<svg width="220" height="180" viewBox="0 0 220 180" xmlns="http://www.w3.org/2000/svg">
+      <line x1="20" y1="165" x2="200" y2="165" stroke="#333" stroke-width="2"/>
+      <circle cx="110" cy="44" r="13" fill="none" stroke="#e8ff47" stroke-width="2"/>
+      <line x1="110" y1="57" x2="110" y2="118" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <!-- legs -->
+      <line x1="110" y1="118" x2="94" y2="165" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <line x1="94" y1="165" x2="78" y2="165" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <line x1="110" y1="118" x2="126" y2="165" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <line x1="126" y1="165" x2="142" y2="165" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <!-- LEFT upper arm pinned -->
+      <line x1="100" y1="72" x2="78" y2="92" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <!-- LEFT forearm curling, pivot at elbow (78,92) -->
+      <g style="transform-origin:78px 92px; animation: hc-arm 1.8s ease-in-out infinite;">
+        <line x1="78" y1="92" x2="65" y2="128" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+        <!-- neutral-grip DB (vertical) -->
+        <rect x="58" y="126" width="8" height="18" rx="3" fill="#888" stroke="#aaa" stroke-width="1"/>
+        <circle cx="62" cy="124" r="5" fill="#555" stroke="#888"/>
+        <circle cx="62" cy="146" r="5" fill="#555" stroke="#888"/>
+      </g>
+      <!-- RIGHT upper arm -->
+      <line x1="120" y1="72" x2="142" y2="92" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <!-- RIGHT forearm (opposite phase) -->
+      <g style="transform-origin:142px 92px; animation: curl-arm2 1.8s ease-in-out infinite;">
+        <line x1="142" y1="92" x2="155" y2="128" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+        <rect x="151" y="126" width="8" height="18" rx="3" fill="#888" stroke="#aaa" stroke-width="1"/>
+        <circle cx="155" cy="124" r="5" fill="#555" stroke="#888"/>
+        <circle cx="155" cy="146" r="5" fill="#555" stroke="#888"/>
+      </g>
+    </svg>
+    <div class="demo-label">Hammer Curl — neutral grip, elbows stay pinned to your sides</div>`,
+
+    rfly: `<svg width="220" height="160" viewBox="0 0 220 160" xmlns="http://www.w3.org/2000/svg">
+      <!-- bench -->
+      <rect x="30" y="88" width="160" height="12" rx="3" fill="#2a2a2a" stroke="#444" stroke-width="1"/>
+      <rect x="40" y="100" width="8" height="25" fill="#222"/>
+      <rect x="172" y="100" width="8" height="25" fill="#222"/>
+      <!-- person lying PRONE (face down) on bench -->
+      <rect x="55" y="76" width="110" height="14" rx="6" fill="#e8ff47" opacity="0.12" stroke="#e8ff47" stroke-width="1.5"/>
+      <!-- head at far right -->
+      <circle cx="175" cy="72" r="11" fill="none" stroke="#e8ff47" stroke-width="2"/>
+      <!-- LEFT arm opening out, pivot at shoulder (~90,76) -->
+      <g style="transform-origin:90px 78px; animation: rfly-arm-l 2s ease-in-out infinite;">
+        <line x1="90" y1="78" x2="68" y2="58" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+        <rect x="56" y="52" width="16" height="7" rx="3" fill="#888" stroke="#aaa" stroke-width="1"/>
+        <circle cx="54" cy="55" r="4" fill="#555" stroke="#888"/>
+        <circle cx="74" cy="55" r="4" fill="#555" stroke="#888"/>
+      </g>
+      <!-- RIGHT arm opening out -->
+      <g style="transform-origin:90px 78px; animation: rfly-arm-r 2s ease-in-out infinite;">
+        <line x1="90" y1="78" x2="68" y2="98" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+        <rect x="56" y="94" width="16" height="7" rx="3" fill="#888" stroke="#aaa" stroke-width="1"/>
+        <circle cx="54" cy="97" r="4" fill="#555" stroke="#888"/>
+        <circle cx="74" cy="97" r="4" fill="#555" stroke="#888"/>
+      </g>
+      <!-- feet -->
+      <line x1="55" y1="83" x2="36" y2="95" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <line x1="55" y1="76" x2="36" y2="64" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+    </svg>
+    <div class="demo-label">Prone Reverse Fly — arms arc up, squeeze shoulder blades together</div>`,
+
+    legraise: `<svg width="220" height="160" viewBox="0 0 220 160" xmlns="http://www.w3.org/2000/svg">
+      <!-- floor -->
+      <line x1="10" y1="130" x2="210" y2="130" stroke="#333" stroke-width="2"/>
+      <!-- person lying on back -->
+      <!-- torso flat -->
+      <rect x="60" y="100" width="100" height="16" rx="6" fill="#e8ff47" opacity="0.12" stroke="#e8ff47" stroke-width="1.5"/>
+      <!-- head -->
+      <circle cx="170" cy="107" r="11" fill="none" stroke="#e8ff47" stroke-width="2"/>
+      <!-- arms flat at sides -->
+      <line x1="62" y1="106" x2="40" y2="115" stroke="#e8ff47" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="62" y1="112" x2="40" y2="120" stroke="#e8ff47" stroke-width="2.5" stroke-linecap="round"/>
+      <!-- legs lifting, pivot at hips (60,108) -->
+      <g style="transform-origin:60px 108px; animation: lr-legs 2.2s ease-in-out infinite;">
+        <line x1="60" y1="108" x2="20" y2="116" stroke="#e8ff47" stroke-width="3.5" stroke-linecap="round"/>
+        <line x1="60" y1="116" x2="20" y2="124" stroke="#e8ff47" stroke-width="3.5" stroke-linecap="round"/>
+        <!-- feet -->
+        <line x1="20" y1="116" x2="8" y2="118" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+        <line x1="20" y1="124" x2="8" y2="126" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      </g>
+    </svg>
+    <div class="demo-label">Leg Raises — lower back pressed down, legs controlled all the way</div>`,
+
+    bentrow: `<svg width="220" height="190" viewBox="0 0 220 190" xmlns="http://www.w3.org/2000/svg">
+      <line x1="10" y1="172" x2="210" y2="172" stroke="#333" stroke-width="2"/>
+      <!-- person hinged ~45 deg -->
+      <circle cx="145" cy="42" r="13" fill="none" stroke="#e8ff47" stroke-width="2"/>
+      <!-- torso angled down ~45 -->
+      <line x1="145" y1="55" x2="100" y2="100" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <!-- arms hanging -->
+      <line x1="120" y1="72" x2="110" y2="115" stroke="#e8ff47" stroke-width="2.5" stroke-linecap="round"/>
+      <!-- barbell -->
+      <g style="animation: bor-arm 1.8s ease-in-out infinite; transform-origin:110px 115px;">
+        <rect x="70" y="112" width="80" height="7" rx="3" fill="#888" stroke="#aaa" stroke-width="1"/>
+        <circle cx="68" cy="115" r="7" fill="#444" stroke="#888"/>
+        <circle cx="68" cy="115" r="4" fill="#333"/>
+        <circle cx="152" cy="115" r="7" fill="#444" stroke="#888"/>
+        <circle cx="152" cy="115" r="4" fill="#333"/>
+      </g>
+      <!-- legs -->
+      <line x1="100" y1="100" x2="85" y2="172" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <line x1="85" y1="172" x2="65" y2="172" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <line x1="100" y1="100" x2="118" y2="172" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <line x1="118" y1="172" x2="138" y2="172" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+    </svg>
+    <div class="demo-label">Barbell Bent-Over Row — hinge ~45°, pull bar to lower chest, back neutral</div>`,
+
+    ohp: `<svg width="220" height="200" viewBox="0 0 220 200" xmlns="http://www.w3.org/2000/svg">
+      <line x1="20" y1="182" x2="200" y2="182" stroke="#333" stroke-width="2"/>
+      <circle cx="110" cy="42" r="13" fill="none" stroke="#e8ff47" stroke-width="2"/>
+      <line x1="110" y1="55" x2="110" y2="120" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <!-- legs -->
+      <line x1="110" y1="120" x2="94" y2="182" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <line x1="94" y1="182" x2="76" y2="182" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <line x1="110" y1="120" x2="126" y2="182" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <line x1="126" y1="182" x2="144" y2="182" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <!-- LEFT arm (upper + forearm angled in, pressing up) -->
+      <g style="transform-origin:100px 72px; animation: ohp-arm-l 2s ease-in-out infinite;">
+        <line x1="100" y1="72" x2="76" y2="62" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      </g>
+      <g style="transform-origin:120px 72px; animation: ohp-arm-r 2s ease-in-out infinite;">
+        <line x1="120" y1="72" x2="144" y2="62" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      </g>
+      <!-- bar animate up/down -->
+      <g style="animation: ohp-bar 2s ease-in-out infinite; transform-origin:110px 55px;">
+        <rect x="68" y="48" width="84" height="8" rx="3" fill="#888" stroke="#aaa" stroke-width="1"/>
+        <circle cx="65" cy="52" r="7" fill="#444" stroke="#888"/>
+        <circle cx="65" cy="52" r="4" fill="#333"/>
+        <circle cx="155" cy="52" r="7" fill="#444" stroke="#888"/>
+        <circle cx="155" cy="52" r="4" fill="#333"/>
+      </g>
+    </svg>
+    <div class="demo-label">Overhead Press — brace core, press straight up, don't flare ribs</div>`,
+
+    curl: `<svg width="220" height="180" viewBox="0 0 220 180" xmlns="http://www.w3.org/2000/svg">
+      <line x1="20" y1="165" x2="200" y2="165" stroke="#333" stroke-width="2"/>
+      <circle cx="110" cy="44" r="13" fill="none" stroke="#e8ff47" stroke-width="2"/>
+      <line x1="110" y1="57" x2="110" y2="118" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <line x1="110" y1="118" x2="94" y2="165" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <line x1="94" y1="165" x2="78" y2="165" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <line x1="110" y1="118" x2="126" y2="165" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <line x1="126" y1="165" x2="142" y2="165" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <!-- LEFT upper arm -->
+      <line x1="100" y1="72" x2="78" y2="92" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <!-- LEFT forearm curling -->
+      <g style="transform-origin:78px 92px; animation: curl-arm 1.8s ease-in-out infinite;">
+        <line x1="78" y1="92" x2="62" y2="130" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+        <rect x="52" y="128" width="20" height="7" rx="3" fill="#888" stroke="#aaa" stroke-width="1"/>
+        <circle cx="50" cy="131" r="5" fill="#555" stroke="#888"/>
+        <circle cx="74" cy="131" r="5" fill="#555" stroke="#888"/>
+      </g>
+      <!-- RIGHT upper arm -->
+      <line x1="120" y1="72" x2="142" y2="92" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <!-- RIGHT forearm (opposite phase) -->
+      <g style="transform-origin:142px 92px; animation: curl-arm2 1.8s ease-in-out infinite;">
+        <line x1="142" y1="92" x2="158" y2="130" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+        <rect x="148" y="128" width="20" height="7" rx="3" fill="#888" stroke="#aaa" stroke-width="1"/>
+        <circle cx="146" cy="131" r="5" fill="#555" stroke="#888"/>
+        <circle cx="170" cy="131" r="5" fill="#555" stroke="#888"/>
+      </g>
+    </svg>
+    <div class="demo-label">Dumbbell Curl — supinate at the top, full extension at bottom</div>`,
+
+    twist: `<svg width="220" height="180" viewBox="0 0 220 180" xmlns="http://www.w3.org/2000/svg">
+      <line x1="10" y1="165" x2="210" y2="165" stroke="#333" stroke-width="2"/>
+      <!-- person seated, leaned back, feet up -->
+      <!-- torso rotating -->
+      <g style="transform-origin:110px 110px; animation: rt-torso 2.4s ease-in-out infinite;">
+        <!-- head -->
+        <circle cx="110" cy="72" r="13" fill="none" stroke="#e8ff47" stroke-width="2"/>
+        <!-- torso angled back ~45 -->
+        <line x1="110" y1="85" x2="110" y2="120" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+        <!-- arms holding DB -->
+        <line x1="100" y1="98" x2="78" y2="108" stroke="#e8ff47" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="120" y1="98" x2="142" y2="108" stroke="#e8ff47" stroke-width="2.5" stroke-linecap="round"/>
+        <rect x="84" y="104" width="52" height="8" rx="3" fill="#888" stroke="#aaa" stroke-width="1"/>
+        <circle cx="82" cy="108" r="5" fill="#555" stroke="#888"/>
+        <circle cx="138" cy="108" r="5" fill="#555" stroke="#888"/>
+      </g>
+      <!-- legs raised (static, slightly bent) -->
+      <line x1="110" y1="120" x2="82" y2="148" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <line x1="82" y1="148" x2="68" y2="140" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <line x1="110" y1="120" x2="138" y2="148" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+      <line x1="138" y1="148" x2="152" y2="140" stroke="#e8ff47" stroke-width="3" stroke-linecap="round"/>
+    </svg>
+    <div class="demo-label">Russian Twist — lean back ~45°, rotate fully side to side</div>`,
+  };
+  return demos[key] || demos['bench'];
+}
+
+
+  let rows = '';
+  for (let wk = 1; wk <= 8; wk++) {
+    if (wk === currentWeek) continue;
+    let cells = `<td>${wk}</td>`;
+    for (let s = 0; s < 4; s++) {
+      const wt = loadKey(wk, currentWorkout, exId, s, 'weight');
+      const reps = loadKey(wk, currentWorkout, exId, s, 'reps');
+      if (wt && reps) {
+        cells += `<td>${wt}kg×${reps}</td>`;
+      } else {
+        cells += `<td style="color:var(--border)">—</td>`;
+      }
+    }
+    rows += `<tr>${cells}</tr>`;
+  }
+  return rows || `<tr><td colspan="5" style="color:var(--border);padding:8px">No history yet</td></tr>`;
+}
+
+// ─── INTERACTIONS ──────────────────────────────────────────────────────────
+function toggleCard(exId) {
+  const card = document.getElementById('card-' + exId);
+  const isOpen = card.classList.toggle('open');
+  saveExOpen(currentWeek, currentWorkout, exId, isOpen);
+}
+
+function saveField(exId, setIdx, field, val) {
+  saveKey(currentWeek, currentWorkout, exId, setIdx, field, val);
+  computeStats();
+}
+
+function toggleCheck(exId, setIdx, btn) {
+  const isChecked = btn.classList.toggle('checked');
+  btn.textContent = isChecked ? '✓' : '○';
+  saveKey(currentWeek, currentWorkout, exId, setIdx, 'checked', isChecked ? '1' : '');
+  updateDots(exId);
+  buildOverview();
+  computeStats();
+}
+
+function updateDots(exId) {
+  const card = document.getElementById('card-' + exId);
+  const ex = findEx(exId);
+  if (!ex) return;
+  const sk = getSetKey(currentWeek);
+  const tSets = ex.targetSets[sk];
+  const dotsEl = card.querySelector('.ex-progress-dots');
+  let html = '';
+  for (let s = 0; s < tSets; s++) {
+    const checked = loadKey(currentWeek, currentWorkout, ex.id, s, 'checked');
+    html += `<div class="dot ${checked === '1' ? 'done' : ''}"></div>`;
+  }
+  dotsEl.innerHTML = html;
+}
+
+function findEx(exId) {
+  for (const wo of Object.values(WORKOUTS)) {
+    for (const ex of wo.exercises) {
+      if (ex.id === exId) return ex;
+    }
+  }
+  return null;
+}
+
+let extraSets = {};
+function addSet(exId, repRange) {
+  if (!extraSets[exId]) extraSets[exId] = 0;
+  extraSets[exId]++;
+  const s = 3 + extraSets[exId]; // beyond target
+  const tbody = document.querySelector(`#card-${exId} .set-table tbody`);
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td class="set-num">${s+1}</td>
+    <td><input class="set-input" type="number" placeholder="kg" step="0.5" min="0"
+      onchange="saveField('${exId}',${s},'weight',this.value)"></td>
+    <td><input class="set-input" type="number" placeholder="${repRange.split('–')[0]}" step="1" min="0"
+      onchange="saveField('${exId}',${s},'reps',this.value)"></td>
+    <td><button class="set-check" onclick="toggleCheck('${exId}',${s},this)">○</button></td>`;
+  tbody.appendChild(tr);
+}
+
+function toggleHistory(exId) {
+  const tbl = document.getElementById('hist-' + exId);
+  tbl.classList.toggle('visible');
+}
+
+// ─── TIMER ─────────────────────────────────────────────────────────────────
+function startTimer(exId) {
+  const btn = document.getElementById('rest-' + exId);
+  if (timerInterval) {
+    stopTimer();
+    return;
+  }
+  timerSecs = 90;
+  const overlay = document.getElementById('timer-overlay');
+  overlay.classList.add('visible');
+  btn.classList.add('running');
+  btn.textContent = '⏱ TIMER RUNNING — TAP TO STOP';
+  updateTimerDisplay();
+  timerInterval = setInterval(() => {
+    timerSecs--;
+    updateTimerDisplay();
+    if (timerSecs <= 0) {
+      stopTimer();
+      document.getElementById('timer-count').textContent = 'GO!';
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+  timerInterval = null;
+  document.getElementById('timer-overlay').classList.remove('visible');
+  document.querySelectorAll('.rest-timer').forEach(b => {
+    b.classList.remove('running');
+    b.textContent = '⏱ START REST TIMER';
+  });
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(timerSecs / 60);
+  const s = timerSecs % 60;
+  document.getElementById('timer-count').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+}
+
+// ─── PAGE SWITCHING ─────────────────────────────────────────────────────────
+function showPage(page) {
+  document.querySelectorAll('.page-section').forEach(s => s.classList.remove('visible'));
+  document.getElementById('page-' + page).classList.add('visible');
+  document.querySelectorAll('.page-nav-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  if (page === 'programme') buildProgramme();
+  window.scrollTo(0, 0);
+}
+
+// ─── PROGRAMME BUILDER ──────────────────────────────────────────────────────
+function buildProgramme() {
+  const grid = document.getElementById('programme-grid');
+  if (grid.dataset.built) return;
+  grid.dataset.built = '1';
+  const days = { A: 'Monday', B: 'Wednesday', C: 'Friday' };
+  let html = '';
+  ['A','B','C'].forEach(key => {
+    const wo = WORKOUTS[key];
+    html += `<div class="prog-col">
+      <div class="prog-col-header">
+        <span class="prog-col-title">WORKOUT ${key}</span>
+        <span class="prog-col-day">${days[key]}</span>
+      </div>
+      <div class="prog-warmup"><b>WARM-UP:</b> ${wo.warmup}</div>`;
+    wo.exercises.forEach((ex, i) => {
+      html += `<div class="prog-ex-row">
+        <div class="prog-ex-num">${i+1}</div>
+        <div class="prog-ex-info">
+          <div class="prog-ex-name${ex.focus?' priority':''}">${ex.name}${ex.focus?' ★':''}</div>
+          <div class="prog-ex-sets">
+            <span>W1–2:</span> ${ex.sets['1-2']} &nbsp;
+            <span>W3–7:</span> ${ex.sets['3-7']} &nbsp;
+            <span>W8:</span> ${ex.sets['8']}
+          </div>
+          ${ex.yt ? `` : ''}
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+  grid.innerHTML = html;
+}
+
+// ─── PHASE / WEEK / WORKOUT SETTERS ────────────────────────────────────────
+function setWeek(w) {
+  currentWeek = w;
+  document.querySelectorAll('.week-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', i + 1 === w);
+  });
+
+  const pk = getPhaseKey(w);
+  const phase = PHASES[pk];
+  const tag = document.getElementById('phase-tag');
+  tag.textContent = phase.tag;
+  tag.className = 'phase-tag ' + phase.cls;
+  document.getElementById('phase-desc').textContent = phase.desc;
+
+  buildOverview();
+  buildWorkout();
+  computeStats();
+}
+
+function setWorkout(wo) {
+  currentWorkout = wo;
+  document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', ['A','B','C'][i] === wo);
+  });
+  buildWorkout();
+}
+
+// ─── INIT ──────────────────────────────────────────────────────────────────
+document.getElementById('header-date').textContent = new Date().toLocaleDateString('en-GB', {
+  weekday: 'short', year: 'numeric', month: 'short', day: 'numeric'
+});
+
+// Override textarea saveNote to work globally
+window.saveNote = function(w, wo, exId, val) {
+  localStorage.setItem(`wk${w}_${wo}_${exId}_note`, val);
+};
+
+setWeek(1);
+
+// ─── PWA INSTALL PROMPT ─────────────────────────────────────────────────────
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('install-btn').style.display = 'inline-block';
+});
+
+function installApp() {
+  if (!deferredPrompt) {
+    alert('To install: tap your browser menu → "Add to Home Screen" or "Install App"');
+    return;
+  }
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(() => {
+    deferredPrompt = null;
+    document.getElementById('install-btn').style.display = 'none';
+  });
+}
+
+window.addEventListener('appinstalled', () => {
+  document.getElementById('install-btn').style.display = 'none';
+});
+</script>
+</body>
+</html>
